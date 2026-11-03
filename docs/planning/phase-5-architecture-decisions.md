@@ -213,7 +213,10 @@ it.
 
 **Decision:**
 - **T1, Project 9's held-out set (100):** never trained on. Used for the
-  combined-system comparison (G3).
+  combined-system comparison (G3). Training reads Project 9's `dev.jsonl`
+  only. If Project 9 replaces its held-out set (for example after building
+  the spelled-number reader, which burns the 3 misses already read), T1
+  follows the new set. Agreed with Project 9's session, 2026-11-03.
 - **T2, the hard tail (about 300):** messages that defeat the rules. A
   separate Claude agent writes them from Project 9's labelling rules and a
   list of what the rules can't do. It never sees the generator, its lists or
