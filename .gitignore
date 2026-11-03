@@ -1,0 +1,35 @@
+# Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Private notes and backups
+HANDOVER*.md
+backups/
+private/
+
+# Model weights, adapters and exports: rebuilt from configs, never committed
+models/
+adapters/
+fused_model/
+*.safetensors
+*.gguf
+*.bin
+*.npz
+
+# Data that must stay off GitHub (Arthur's own rewritten messages, review sheets)
+data/private/
+
+# Run outputs, logs and caches
+logs/
+runs/
+*.log
+.cache/
+__pycache__/
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.DS_Store
