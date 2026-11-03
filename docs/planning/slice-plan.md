@@ -5,8 +5,8 @@
 | # | Prerequisite | Needed for | Who |
 |---|---|---|---|
 | P1 | Arthur OKs Phases 1, 2 and 5 | Everything | Arthur |
-| P2 | Arthur OKs mlx-lm and llama.cpp (ADR-004, ADR-009) | Spikes, slice 1 | Arthur |
-| P3 | Arthur OKs downloading the two finalists, about 2 GB each | Spikes 1 and 2 | Arthur |
+| P2 | ~~Arthur OKs mlx-lm and llama.cpp~~ Done 2026-11-03 | Spikes, slice 1 | Arthur |
+| P3 | Downloading the two finalists, about 2 GB each: agreed for when the spikes run, after P1 | Spikes 1 and 2 | Arthur |
 | P4 | Project 9's parser merged, so this repo pins it by commit | Slice 1 | Project 9's session, Arthur merges |
 | P5 | Project 9's card-number filter (PR3) merged | Slice 1's data checks | Project 9's session |
 | P6 | **Project 9's real-data gate:** its slice 5 dogfood done, misses counted | Starting slice 1 (given) | Arthur, Project 9's session |
