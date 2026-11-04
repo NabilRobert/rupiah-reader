@@ -30,10 +30,10 @@ on. The task side does.
 
 | Part | Reused | Built (and why) |
 |---|---|---|
-| Reading an amount | **Project 9's `parse_amount`**, as a git dependency pinned to a commit | — |
-| Labelling rules, categories, corpus format | **Project 9's corpus README and dev set** | The `amount_text` span, derived by code (ADR-006) |
+| Reading an amount | **Project 9's `parse_amount`**, as a git dependency pinned to a commit (`ab169ba`) | — |
+| Labelling rules, categories, corpus format | **Project 9's `tracker.corpus`** (`DEV_CORPUS`, `HOLDOUT_CORPUS`, `load_corpus`) and its README | The `amount_text` span, derived by code (ADR-006) |
 | The "model points, code decides" contract | **Project 9's ADR-007** (from Pitstop, via Juku) | — |
-| Card-number filter | **Project 9's PR3** check, when it lands | — |
+| Card-number filter | **Project 9's PR3** check (`looks_sensitive`, on its `main`) | — |
 | LoRA training | **mlx-lm** (ADR-004) | A YAML config per run |
 | GGUF conversion, quantising, serving | **llama.cpp** (ADR-009) | A container file |
 | Held-out scoring | **Inspect AI**, Arthur's eval standard, through its OpenAI-compatible provider (ADR-011) | One task and one scorer |
@@ -82,10 +82,12 @@ didn't read from the text.
 
 ## ADR-003: The gain is settled questions and right labels, not raw coverage (settled)
 
-**Finding (2026-11-03):** Project 9's 3 held-out misses are spelled-out
-numbers. `parse_amount` returns `None` for "setengah juta" and "lima puluh
-ribu", so a pointing model can't recover them. Coverage on Project 9's
-held-out set can't rise. See Phase 1.
+**Finding (2026-11-03, updated 2026-11-04):** Project 9's 3 held-out misses
+were spelled-out numbers, which a pointing model can't recover: the parser
+reads the span, not the model. Project 9 has since taught the rules to read
+them (`ab169ba`), which also means its held-out set no longer measures the
+rules' coverage. Either way, raw coverage on T1 isn't a fair measure of the
+model. See Phase 1.
 
 **Decision:** measure what the model can change, on the rules' failures:
 
@@ -98,9 +100,10 @@ held-out set can't rise. See Phase 1.
 | **Combined system** | Rules first, model on their failures, on T1 | No measure worse than rules alone (G3) |
 | **Latency** | p50 and p95 per message on the server's CPU, in a capped container | G4 |
 
-**And a separate change for Project 9's session:** a deterministic reader for
-spelled-out numbers ("setengah juta", "lima puluh ribu") in the rules. That
-is where those messages belong. It's reported to Project 9, not built here.
+**Spelled-out numbers belong in the rules.** Project 9's session built the
+reader (merged at `ab169ba`, 2026-11-03). Still unread there: amounts with
+no scale word ("kopi dua puluh lima") and "seperempat juta". Those are
+Project 9's to decide, not this model's.
 
 **Rejected:**
 - *Report coverage alone:* it would show zero gain on T1 and hide the real
@@ -168,7 +171,7 @@ rate, then server latency. Lock the choice before any held-out scoring.
 | Source | Size (guess) | Synthetic? | Labels |
 |---|---|---|---|
 | **Generator** | 3,000 to 5,000 | Yes, by code | Exact by construction: it picks the amount, writes it in one of Project 9's forms, and records the span |
-| **Project 9 dev set** | 205 | Yes, written by Claude | Project 9's labels; the span derived by code |
+| **Project 9 dev set** | 220 at `ab169ba`, less the 9 also in its held-out set | Yes, written by Claude | Project 9's labels; the span derived by code |
 | **Arthur's rewrites** | Tens, after the real-data gate | No: written by Arthur from his own misses | Arthur's; checked by code |
 
 - **The generator** composes messages from word lists: items, merchants,
@@ -213,10 +216,12 @@ it.
 
 **Decision:**
 - **T1, Project 9's held-out set (100):** never trained on. Used for the
-  combined-system comparison (G3). Training reads Project 9's `dev.jsonl`
-  only. If Project 9 replaces its held-out set (for example after building
-  the spelled-number reader, which burns the 3 misses already read), T1
-  follows the new set. Agreed with Project 9's session, 2026-11-03.
+  combined-system comparison (G3). Training reads Project 9's dev set only,
+  less the 9 texts that are also in the held-out set. Since `ab169ba` the
+  rules were fixed on this set, so "rules alone" scores better on it than it
+  would on fresh text. That makes G3 lean against the model, so a pass still
+  counts. When Project 9 writes a fresh held-out set, T1 follows it. Agreed
+  with Project 9's session, 2026-11-03.
 - **T2, the hard tail (about 300):** messages that defeat the rules. A
   separate Claude agent writes them from Project 9's labelling rules and a
   list of what the rules can't do. It never sees the generator, its lists or
@@ -385,7 +390,7 @@ heavier than the problem.
 |---|---|---|---|
 | 001 | One task first; task-blind core; Juku later; after P9's real-data gate | Both at once; Juku first | **Given** |
 | 002 | Model points at text; never a number | Integer output; normalised digits | **Settled** |
-| 003 | Gain = settled questions and right labels; zero-wrong gate; spelled numbers go to P9's rules | Coverage alone; model grading | **Settled** |
+| 003 | Gain = settled questions and right labels; zero-wrong gate; spelled numbers go to P9's rules (read since `ab169ba`) | Coverage alone; model grading | **Settled** |
 | 004 | mlx-lm LoRA on the Mac | TRL/PEFT, Unsloth, Axolotl, cloud GPU, provider fine-tuning, full fine-tune | **Settled** |
 | 005 | Bake-off: Sailor2-1B-Chat vs Qwen3.5-0.8B, on dev only | Llama 3.2, Gemma 3, Gemma 4 E2B, LFM2, Granite, SmolLM3 | Open |
 | 006 | Mostly generated data; labels checked by the parser; Arthur samples | Real messages, bulk model-written data, translation | **Settled** (P9 dev set included, disclosed) |
@@ -427,9 +432,10 @@ Project 9 change. See the [slice plan](slice-plan.md).
 - Publishing, once slice 1's results are in.
 - Juku's slice: the provider terms and a budget (ADR-012).
 
-**For Project 9's session (reported, not asked of Arthur):** a spelled-out
-number reader in the rules; export the corpus loader and labelling schema as
-importable code, so this repo depends on them instead of copying.
+**For Project 9's session:** both requests are done, merged at `ab169ba`
+(2026-11-03): the spelled-number reader, and `tracker.corpus` as importable
+package data. Still open on its side: a fresh held-out set (T1), and the
+forms the rules still can't read.
 
 **For the spikes:** Qwen3.5's hybrid architecture through mlx-lm and
 llama.cpp; memory and time on the M2; latency on 2 vCPUs; what each log
@@ -455,7 +461,9 @@ on greedy output.
 [Anthropic consumer terms](https://www.anthropic.com/legal/consumer-terms) ·
 [Anthropic commercial terms](https://www.anthropic.com/legal/commercial-terms) ·
 Project 9: `docs/parser-accuracy.md` and `tracker/parsing/amount.py` at
-`21a307f` (branch `feat/amount-parser`) ·
+`21a307f` (branch `feat/amount-parser`), and `tracker/corpus/`,
+`tracker/parsing/` and `docs/parser-accuracy.md` at `ab169ba` (`main`,
+read 2026-11-04) ·
 Juku: `evals/paid-run-results.md` at `0eeff4d`
 
 **Secondary, used only where marked:**

@@ -7,8 +7,8 @@
 | P1 | Arthur OKs Phases 1, 2 and 5 | Everything | Arthur |
 | P2 | ~~Arthur OKs mlx-lm and llama.cpp~~ Done 2026-11-03 | Spikes, slice 1 | Arthur |
 | P3 | Downloading the two finalists, about 2 GB each: agreed for when the spikes run, after P1 | Spikes 1 and 2 | Arthur |
-| P4 | Project 9's parser merged, so this repo pins it by commit | Slice 1 | Project 9's session, Arthur merges |
-| P5 | Project 9's card-number filter (PR3) merged | Slice 1's data checks | Project 9's session |
+| P4 | ~~Project 9's parser merged, so this repo pins it by commit~~ Done 2026-11-03: pin `ab169ba` (parser, spelled numbers, `tracker.corpus`) | Slice 1 | Project 9's session, Arthur merges |
+| P5 | ~~Project 9's card-number filter (PR3) merged~~ Done: `looks_sensitive` is in `ab169ba` | Slice 1's data checks | Project 9's session |
 | P6 | **Project 9's real-data gate:** its slice 5 dogfood done, misses counted | Starting slice 1 (given) | Arthur, Project 9's session |
 | P7 | A GitHub repo for this project | Pushing anything | Arthur |
 | P8 | Project 9 deployed, and the server checked for room | Slice 2 | Project 9's session, Servers & security session |
@@ -54,8 +54,9 @@ updates `docs/guide.md`.
   scorer (Project 9's parser plus exact match);
 - `evals/finance.py`: the Inspect AI task;
 - `configs/`: one YAML per training run;
-- `data/holdout/t2.jsonl`, frozen and hashed; T1 read from Project 9 by
-  commit;
+- `data/holdout/t2.jsonl`, frozen and hashed; T1 and the dev set read from
+  Project 9's `tracker.corpus` at `ab169ba`, with the dev texts that are also
+  in T1 dropped;
 - `docs/model-report.md`, generated.
 
 **Order:**

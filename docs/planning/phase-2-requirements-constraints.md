@@ -45,6 +45,9 @@ in Project 9. The build goes in slices ([slice plan](slice-plan.md)).
   `generator_version`). mlx-lm ignores keys it doesn't know (its LORA.md).
 - **D2.** Allowed sources: the generator; Project 9's dev set; messages
   Arthur writes or rewrites himself. Nothing else without a new decision.
+  Project 9's sets are imported from its `tracker.corpus` package, pinned by
+  commit (`ab169ba`). Any dev text that is also in Project 9's held-out set
+  is dropped before training (9 at that commit, from its labelling README).
 - **D3.** Every label is checked by code: `amount_text` is a substring of the
   text, and Project 9's `parse_amount(amount_text)` equals the labelled
   amount. A line that fails is refused, not fixed by hand.

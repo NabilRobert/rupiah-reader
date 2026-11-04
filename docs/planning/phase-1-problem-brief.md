@@ -32,21 +32,30 @@ both.
   reviewer can check: **zero wrong amounts**, and a rules engine that stays
   the safety net.
 
-## What Project 9's numbers already say (read 2026-11-03)
+## What Project 9's numbers say (updated 2026-11-04)
 
-Project 9's rules, on its 100-message held-out set (`docs/parser-accuracy.md`
-on `feat/amount-parser`, commit `16a324b`): 0 wrong amounts, **coverage
-96.5%** (82 of 85). The 3 misses are all spelled-out numbers:
-"setengah juta", "lima puluh ribu", "satu juta dua ratus ribu".
+Project 9's rules were scored once on its 100-message held-out set, at commit
+`16a324b` (`docs/parser-accuracy.md`): 0 wrong amounts, **coverage 96.5%**
+(82 of 85). All 3 misses were spelled-out amounts: "setengah juta", "lima
+puluh ribu", "satu juta dua ratus ribu".
 
-**Under Project 9's own rule, a model can't recover those 3.** ADR-007 says
-the model may only point at the words that hold the amount, and code reads
-them with `parse_amount`. A probe of `parse_amount` at that commit
-(2026-11-03) returned `None` for "setengah juta" and "lima puluh ribu": the
-parser can't read the words even when the model finds them. So on Project 9's
-held-out set, **the model's coverage gain is zero by construction**.
+**Project 9's rules now read those forms** (merged on its `main` at
+`ab169ba`, 2026-11-03). A probe of `parse_amount` at that commit
+(2026-11-04) reads "setengah juta" as 500,000, "lima puluh ribu" as 50,000
+and "satu juta dua ratus ribu" as 1,200,000. Two things follow:
 
-What the model *can* add, under the same rule:
+- **Project 9's held-out set no longer measures the rules' coverage.** The
+  fix was found on it, so the 100% its CI now prints isn't a measurement
+  (Project 9 says so in the same doc). 96.5% stays the honest figure until
+  Project 9 writes a fresh held-out set (ADR-007, T1).
+- **Spelled-out amounts are not the model's gap.** They never were: ADR-007
+  lets the model only point at the words, and `parse_amount` reads them. Two
+  forms the rules still can't read are amounts with no scale word ("kopi dua
+  puluh lima") and "seperempat juta". The same probe returns `None` for
+  both, so a model pointing at them gains nothing. They stay a rules job.
+
+What the model *can* add, under the same rule (each example rechecked
+against Project 9's `parse_message` at `ab169ba`, 2026-11-04):
 - **Turn questions into one-tap confirmations.** "beli iphone 15 pro 17jt"
   asks today with candidates 15, 15,000 and 17,000,000. The model points at
   "17jt", which `parse_amount` reads as 17,000,000.
@@ -102,8 +111,8 @@ measured instead.
 - **The model supplying a number.** It points at text, always.
 - **Replacing the rules.** The rules run first, and stay the safety net.
 - **A general Indonesian assistant.** One narrow task.
-- **Reading spelled-out numbers by model.** That's a rules change in
-  Project 9 (ADR-003).
+- **Reading spelled-out numbers by model.** Project 9's rules read them
+  since `ab169ba`; the forms still unread stay a rules job (ADR-003).
 - **Training on anyone's real messages without consent.** Only Arthur's own,
   and only after he rewrites them (ADR-006).
 - **GPU servers, cloud training or paid APIs.**
