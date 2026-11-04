@@ -6,9 +6,9 @@ Project 9's fallback for messages the rules parser can't settle, so no
 financial message leaves the server. Training is a LoRA fine-tune with MLX
 on Arthur's Mac, at $0. It is the fourteenth portfolio piece.
 
-The repo is `small-model-training`. A second, later slice reuses the same
-setup to shrink Juku's chat (ADR-012). The name says what the repo does for
-both.
+The repo is `rupiah-reader` (Arthur's name, 2026-11-04). A second, later
+slice reuses the same setup to shrink Juku's chat (ADR-012). The name follows
+the first task; the training core stays task-blind (ADR-011).
 
 ## Problem
 
